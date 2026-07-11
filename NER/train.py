@@ -1,7 +1,16 @@
 import os
 import pickle
+import numpy as np
 import torch
 from torch.utils.data import Dataset
+from transformers import (
+    AutoTokenizer,
+    AutoModelForTokenClassification,
+    TrainingArguments,
+    Trainer,
+    DataCollatorForTokenClassification,
+)
+from seqeval.metrics import classification_report, f1_score, precision_score, recall_score
 
 MODEL_NAME = "distilbert-base-uncased"
 DATA_DIR = "data"
@@ -41,3 +50,30 @@ class NERDataset(Dataset):
             "attention_mask": torch.tensor(item["attention_mask"], dtype=torch.long),
             "labels": torch.tensor(item["labels"], dtype=torch.long),
         }
+    
+def build_compute_metrics(id2label):
+    def compute_metrics(eval_pred):
+        predictions, labels = eval_pred
+        predictions = np.argmax(predictions, axis=2)
+
+        true_labels = []
+        true_predictions = []
+        
+        for pred_seq, label_seq in zip(predictions, labels):
+            seq_labels = []
+            seq_preds = []
+            for p, l in zip(pred_seq, label_seq):
+                if l == -100:
+                    continue
+                seq_labels.append(id2label[l])
+                seq_preds.append(id2label[p])
+            true_labels.append(seq_labels)
+            true_predictions.append(seq_preds)
+ 
+        return {
+            "precision": precision_score(true_labels, true_predictions),
+            "recall": recall_score(true_labels, true_predictions),
+            "f1": f1_score(true_labels, true_predictions),
+        }
+ 
+    return compute_metrics
