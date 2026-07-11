@@ -62,3 +62,136 @@ def generate_address():
 
 def generate_name():
     return f"{random.choice(first_names)} {random.choice(last_names)}"
+
+def generate_example():
+    use_entity = random.random() < 0.65  # ~65% positive examples
+ 
+    if not use_entity:
+        text = random.choice(sentence_templates_without_entity)
+        return text, []
+ 
+    template = random.choice(sentence_templates_with_entity)
+    entities = []
+    text = template
+ 
+    if "{PERSON_NAME}" in text and "{ADDRESS}" in text:
+        name = generate_name()
+        addr = generate_address()
+        text = text.replace("{PERSON_NAME}", name, 1)
+        name_start = text.index(name)
+        entities.append((name_start, name_start + len(name), "PERSON_NAME"))
+ 
+        text = text.replace("{ADDRESS}", addr, 1)
+        addr_start = text.index(addr)
+        entities.append((addr_start, addr_start + len(addr), "ADDRESS"))
+ 
+    elif "{PERSON_NAME}" in text:
+        name = generate_name()
+        text = text.replace("{PERSON_NAME}", name, 1)
+        name_start = text.index(name)
+        entities.append((name_start, name_start + len(name), "PERSON_NAME"))
+ 
+    elif "{ADDRESS}" in text:
+        addr = generate_address()
+        text = text.replace("{ADDRESS}", addr, 1)
+        addr_start = text.index(addr)
+        entities.append((addr_start, addr_start + len(addr), "ADDRESS"))
+ 
+    return text, entities
+ 
+def generate_dataset(n_examples=7500):
+    dataset = []
+    seen = set()
+    attempts = 0
+    while len(dataset) < n_examples and attempts < n_examples * 3:
+        attempts += 1
+        text, entities = generate_example()
+        if text in seen:
+            continue
+        seen.add(text)
+        dataset.append({"text": text, "entities": entities})
+    return dataset
+
+def convert_to_bio(text, entities, tokenizer, max_length=64):
+    
+    encoding = tokenizer(
+        text,
+        return_offsets_mapping=True,
+        truncation=True,
+        max_length=max_length,
+        padding="max_length",
+    )
+    offsets = encoding["offset_mapping"]
+    labels = ["O"] * len(offsets)
+ 
+    for start, end, entity_type in entities:
+        entity_started = False
+        for i, (tok_start, tok_end) in enumerate(offsets):
+            if tok_start == tok_end: 
+                continue
+            if tok_start >= start and tok_end <= end:
+                if not entity_started:
+                    labels[i] = f"B-{entity_type}"
+                    entity_started = True
+                else:
+                    labels[i] = f"I-{entity_type}"
+ 
+    label_ids = [label2id[l] for l in labels]
+    return {
+        "input_ids": encoding["input_ids"],
+        "attention_mask": encoding["attention_mask"],
+        "labels": label_ids,
+    }
+ 
+def build_training_data(dataset, tokenizer):
+    processed = []
+    for example in dataset:
+        result = convert_to_bio(example["text"], example["entities"], tokenizer)
+        processed.append(result)
+    return processed
+
+def visualize_labels(example_idx, dataset, training_data, tokenizer):
+    tokens = tokenizer.convert_ids_to_tokens(training_data[example_idx]["input_ids"])
+    labels = [id2label[l] for l in training_data[example_idx]["labels"]]
+    print(dataset[example_idx]["text"])
+    for tok, lab in zip(tokens, labels):
+        if lab != "O" and tok not in ("[PAD]",):
+            print(f"  {tok:15s} -> {lab}")
+    print()
+
+if __name__ == "__main__":
+    os.makedirs("data", exist_ok=True)
+ 
+    tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+ 
+    dataset = generate_dataset(7500)
+    print(f"Generated {len(dataset)} examples")
+ 
+    training_data = build_training_data(dataset, tokenizer)
+ 
+    combined = list(zip(dataset, training_data))
+    random.shuffle(combined)
+    dataset, training_data = zip(*combined)
+    dataset, training_data = list(dataset), list(training_data)
+ 
+    n = len(training_data)
+    train_data = training_data[: int(n * 0.8)]
+    val_data = training_data[int(n * 0.8): int(n * 0.9)]
+    test_data = training_data[int(n * 0.9):]
+    print(f"Train: {len(train_data)}, Val: {len(val_data)}, Test: {len(test_data)}")
+ 
+    print("\n--- Sanity check ---")
+    for i in [0, 1, 2, 50, 100]:
+        visualize_labels(i, dataset, training_data, tokenizer)
+ 
+    # save to disk
+    with open("data/train_data.pkl", "wb") as f:
+        pickle.dump(train_data, f)
+    with open("data/val_data.pkl", "wb") as f:
+        pickle.dump(val_data, f)
+    with open("data/test_data.pkl", "wb") as f:
+        pickle.dump(test_data, f)
+    with open("data/label_config.pkl", "wb") as f:
+        pickle.dump({"label_list": label_list, "label2id": label2id, "id2label": id2label}, f)
+ 
+    print("\nSaved train_data.pkl, val_data.pkl, test_data.pkl, label_config.pkl to data/")
