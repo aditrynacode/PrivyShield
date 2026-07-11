@@ -38,6 +38,10 @@ sentence_templates_without_entity = [
     "The network connection was restored.", "The application is running smoothly.", "The queue is moving quickly.", "The shopping cart is empty.", "The checkout process is simple.", "The package requires a signature.", "The document has been archived.", "The camera battery is low.", "The microphone is muted.", "The speaker volume is too high."
 ]
 
+label_list = ["O", "B-PERSON_NAME", "I-PERSON_NAME", "B-ADDRESS", "I-ADDRESS"]
+label2id = {label: i for i, label in enumerate(label_list)}
+id2label = {i: label for label, i in label2id.items()}
+
 def generate_address():
     house_no = random.randint(1, 999)
     street = random.choice(street_types)
@@ -45,7 +49,7 @@ def generate_address():
     city = random.choice(cities)
     state = random.choice(states)
     pincode = random.randint(100000, 999999)
-
+ 
     formats = [
         f"{house_no}, {street}, {locality}, {city}, {state} {pincode}",
         f"{house_no}, {street}, {locality}, {city} - {pincode}",
@@ -56,65 +60,5 @@ def generate_address():
     ]
     return random.choice(formats)
 
-
 def generate_name():
     return f"{random.choice(first_names)} {random.choice(last_names)}"
-
-
-def generate_example():
-    use_entity = random.random() < 0.65  # ~65% positive examples, 35% negative
-
-    if not use_entity:
-        text = random.choice(sentence_templates_without_entity)
-        return text, []
-
-    template = random.choice(sentence_templates_with_entity)
-    entities = []
-    text = template
-
-    if "{PERSON_NAME}" in text and "{ADDRESS}" in text:
-
-        name = generate_name()
-        addr = generate_address()
-        
-        text = text.replace("{PERSON_NAME}", name, 1)
-        name_start = text.index(name)
-        entities.append((name_start, name_start + len(name), "PERSON_NAME"))
-
-        text = text.replace("{ADDRESS}", addr, 1)
-        addr_start = text.index(addr)
-        entities.append((addr_start, addr_start + len(addr), "ADDRESS"))
-
-    elif "{PERSON_NAME}" in text:
-        name = generate_name()
-        text = text.replace("{PERSON_NAME}", name, 1)
-        name_start = text.index(name)
-        entities.append((name_start, name_start + len(name), "PERSON_NAME"))
-
-    elif "{ADDRESS}" in text:
-        addr = generate_address()
-        text = text.replace("{ADDRESS}", addr, 1)
-        addr_start = text.index(addr)
-        entities.append((addr_start, addr_start + len(addr), "ADDRESS"))
-
-    return text, entities
-
-
-def generate_dataset(n_examples=7500):
-    dataset = []
-    seen = set()
-    attempts = 0
-    while len(dataset) < n_examples and attempts < n_examples * 3:
-        attempts += 1
-        text, entities = generate_example()
-        if text in seen: 
-            continue
-        seen.add(text)
-        dataset.append({"text": text, "entities": entities})
-    return dataset
-
-
-dataset = generate_dataset(7500)
-print(f"Generated {len(dataset)} examples")
-print(dataset[0])
-print(dataset[1])
