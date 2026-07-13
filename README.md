@@ -10,28 +10,11 @@ PrivyShield is an AI-powered screen privacy tool that runs completely offline to
 
 -  Real-time detection of sensitive information
 -  Detects personal names using a custom NER model
--  Detects addresses using OCR + NER
+-  Detects addresses, OTPs, Aadhar numbers, Credit Card numbers using OCR + NER
 -  Screen/image processing pipeline
 -  Automatic masking of detected regions
 -  Fully offline inference
 -  Modular architecture for easy extension
-
----
-
-## Project Structure
-
-```
-PrivyShield/
-│
-├── detection/          # OCR, NER and detection pipeline
-├── training/           # Model training scripts
-├── models/             # Trained model weights
-├── datasets/           # Dataset generation utilities
-├── utils/              # Helper functions
-├── test_pipeline.py    # Example inference script
-├── requirements.txt
-└── README.md
-```
 
 ---
 
@@ -67,7 +50,7 @@ Blur / Mask Sensitive Regions
 - PyTorch
 - Hugging Face Transformers
 - PaddleOCR
-- OpenCV
+- MSS
 - NumPy
 
 ---
@@ -78,6 +61,9 @@ Currently supported entity types:
 
 - Person Names
 - Addresses
+- Adhar Number
+- Credit Card Number
+- OTPs
 
 More entity types will be added in future releases.
 
