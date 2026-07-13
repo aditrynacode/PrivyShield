@@ -1,9 +1,7 @@
 from .regex_pii import detect_structured_pii, remove_overlaps
-from .geometry import box_to_bbox
- 
- 
-def detect_sensitive_regions(image, ner_predictor=None):
 
+def detect_sensitive_regions(image, ner_predictor=None):
+ 
     """NOTE: run_ocr is imported here (not at module top) so that fuse_detections()
     below stays fully testable without PaddleOCR installed; only this
     function, which actually needs to run OCR, requires that dependency."""
@@ -11,8 +9,7 @@ def detect_sensitive_regions(image, ner_predictor=None):
     from .ocr_engine import run_ocr
     ocr_results = run_ocr(image)
     return fuse_detections(ocr_results, ner_predictor)
- 
- 
+
 def fuse_detections(ocr_results, ner_predictor=None):
 
     flagged_regions = []
@@ -32,7 +29,7 @@ def fuse_detections(ocr_results, ner_predictor=None):
  
         if line_detections:
             flagged_regions.append({
-                "bbox": box_to_bbox(line["box"]),
+                "bbox": line["bbox"],
                 "text": text,
                 "detections": line_detections,
             })
