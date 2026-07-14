@@ -8,20 +8,13 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QPainter, QImage, QPixmap, QFont
 
-
 CAPTURE_INTERVAL_MS = 1200
 BLUR_RADIUS = 18
-CONFIDENCE_THRESHOLD = 0.95
-
+CONFIDENCE_THRESHOLD = 0.85
 
 class DetectionWorker(QThread):
-    """
-    Runs grab_screen() + detect_sensitive_regions() on a background thread
-    so the GUI thread (and therefore click-through + paintEvent) never blocks.
-    Emits result_ready(regions, frame) which Qt automatically delivers on the
-    main thread via a queued connection, since the receiver lives there.
-    """
-    result_ready = pyqtSignal(object, object)  # (regions, frame_ndarray)
+
+    result_ready = pyqtSignal(object, object) 
 
     def __init__(self, ner_predictor, interval_ms):
         super().__init__()
@@ -41,8 +34,7 @@ class DetectionWorker(QThread):
 
             elapsed = time.time() - start
             sleep_time = max(0.0, self.interval_s - elapsed)
-            # sleep in small chunks so stop() feels responsive instead of
-            # waiting out a full interval before the thread actually exits
+
             slept = 0.0
             while self._running and slept < sleep_time:
                 chunk = min(0.05, sleep_time - slept)
@@ -97,9 +89,7 @@ class PrivyShieldOverlay(QWidget):
         )
 
     def _on_detection_result(self, regions, frame):
-        # This slot runs on the MAIN thread even though it was emitted from
-        # the worker thread — Qt queues cross-thread signals automatically.
-        # This is the ONLY place per cycle where Qt state is touched.
+
         self.last_frame = Image.fromarray(frame)
         self.flagged_regions = regions
         self.protected_count = max(self.protected_count, len(regions))
@@ -130,7 +120,7 @@ class PrivyShieldOverlay(QWidget):
             min(self.last_frame.height, y_max + pad),
         )
         if crop_box[2] <= crop_box[0] or crop_box[3] <= crop_box[1]:
-            return  # degenerate box, skip
+            return 
 
         patch = self.last_frame.crop(crop_box)
         blurred = patch.filter(ImageFilter.GaussianBlur(BLUR_RADIUS))
