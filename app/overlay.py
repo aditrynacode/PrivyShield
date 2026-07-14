@@ -1,14 +1,17 @@
 import sys
 import time
+
+from detection import detect_sensitive_regions, NERPredictor, grab_screen
+
 from PIL import Image, ImageFilter
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 from PyQt5.QtCore import Qt, QTimer, QRect
 from PyQt5.QtGui import QPainter, QImage, QPixmap, QColor, QFont
-from detection import detect_sensitive_regions, NERPredictor, grab_screen
+ 
 
-CAPTURE_INTERVAL_MS = 1200         
+CAPTURE_INTERVAL_MS = 1200 
 BLUR_RADIUS = 18
-CONFIDENCE_THRESHOLD = 0.75
+CONFIDENCE_THRESHOLD = 0.95
  
  
 class PrivyShieldOverlay(QWidget):
@@ -16,8 +19,8 @@ class PrivyShieldOverlay(QWidget):
         super().__init__()
         self.ner_predictor = ner_predictor
         self.flagged_regions = []    
-        self.last_frame = None      
-        self.protected_count = 0       
+        self.last_frame = None        
+        self.protected_count = 0     
  
         self._setup_window()
         self._setup_status_label()
@@ -75,12 +78,16 @@ class PrivyShieldOverlay(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
+
+        painter.setCompositionMode(QPainter.CompositionMode_Source)
+        painter.fillRect(self.rect(), Qt.transparent)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
  
         if self.last_frame is not None:
             for region in self.flagged_regions:
                 x_min, y_min, x_max, y_max = region["bbox"]
                 self._draw_blurred_patch(painter, x_min, y_min, x_max, y_max)
-
+ 
     def _draw_blurred_patch(self, painter, x_min, y_min, x_max, y_max):
 
         width = max(1, x_max - x_min)
@@ -107,6 +114,7 @@ class PrivyShieldOverlay(QWidget):
         qimage = QImage(data, pil_image.width, pil_image.height, QImage.Format_RGB888)
         return qimage.copy()
  
+ 
 def main():
     import pickle
  
@@ -124,6 +132,7 @@ def main():
     overlay = PrivyShieldOverlay(ner_predictor=ner)
     overlay.showFullScreen()
     sys.exit(app.exec_())
+ 
  
 if __name__ == "__main__":
     main()
