@@ -198,13 +198,16 @@ The live overlay's capture loop adapts to this automatically: it never sleeps lo
 
 *Overlay Screen Shield demo*
 
+<hr>
 <img width="1092" height="432" alt="Screenshot 2026-07-15 144317" src="https://github.com/user-attachments/assets/feb6bff0-6059-49a4-9d38-2df3cd34db88" />
 
 *Redaction export tool demo*
 
+<hr>
 <img width="426" height="278" alt="Screenshot 2026-07-15 144545" src="https://github.com/user-attachments/assets/001eab0a-51ed-4e46-a539-310bce438fda" />
 
 *Notification from Clipboard Guard tool*
+<hr>
 
 ## License
 
