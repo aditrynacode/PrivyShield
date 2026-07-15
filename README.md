@@ -207,6 +207,11 @@ The live overlay's capture loop adapts to this automatically: it never sleeps lo
 <img width="426" height="278" alt="Screenshot 2026-07-15 144545" src="https://github.com/user-attachments/assets/001eab0a-51ed-4e46-a539-310bce438fda" />
 
 *Notification from Clipboard Guard tool*
+
+<hr>
+<img width="1637" height="818" alt="Screenshot 2026-07-15 150201" src="https://github.com/user-attachments/assets/4d080ab1-f25c-4059-aa1d-cdaee36a43cb" />
+
+*Web Demo Interface*
 <hr>
 
 ## License
