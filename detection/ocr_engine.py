@@ -7,7 +7,14 @@ def get_ocr_engine():
     global _ocr_engine
     if _ocr_engine is None:
 
-        _ocr_engine = PaddleOCR(use_textline_orientation=True, lang="en", enable_mkldnn=False)
+        _ocr_engine = PaddleOCR(
+            use_doc_orientation_classify=False,
+            use_doc_unwarping=False,
+            use_textline_orientation=False,
+            text_detection_model_name="PP-OCRv5_mobile_det",
+            text_recognition_model_name="PP-OCRv5_mobile_rec",
+            lang="en",
+        )
     return _ocr_engine
  
  

@@ -45,7 +45,6 @@ class DetectionWorker(QThread):
         self._running = False
         self.wait()
 
-
 class PrivyShieldOverlay(QWidget):
     def __init__(self, ner_predictor):
         super().__init__()
@@ -140,7 +139,6 @@ class PrivyShieldOverlay(QWidget):
         self.worker.stop()
         super().closeEvent(event)
 
-
 def main():
     import pickle
 
@@ -158,7 +156,6 @@ def main():
     overlay = PrivyShieldOverlay(ner_predictor=ner)
     overlay.showFullScreen()
     sys.exit(app.exec_())
-
 
 if __name__ == "__main__":
     main()
