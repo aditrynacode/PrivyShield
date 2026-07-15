@@ -194,7 +194,9 @@ The live overlay's capture loop adapts to this automatically: it never sleeps lo
 
 ## Screenshots
 
-*(Coming soon)*
+<img width="445" height="272" alt="Screenshot 2026-07-15 144939" src="https://github.com/user-attachments/assets/00206ad0-42ba-4ad8-884d-bbae86edb58b" />
+<img width="1092" height="432" alt="Screenshot 2026-07-15 144317" src="https://github.com/user-attachments/assets/feb6bff0-6059-49a4-9d38-2df3cd34db88" />
+<img width="426" height="278" alt="Screenshot 2026-07-15 144545" src="https://github.com/user-attachments/assets/001eab0a-51ed-4e46-a539-310bce438fda" />
 
 ## License
 
