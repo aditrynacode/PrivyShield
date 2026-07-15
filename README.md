@@ -19,7 +19,7 @@ Sensitive data leaks from more than one place, so PrivyShield is built as layere
 | Layer | Status | What it does |
 |---|---|---|
 | **Layer 1: Screen Shield** | ✅ Done | Live screen capture → OCR → PII detection → live blur overlay, with a system tray toggle |
-| **Layer 4: Redaction Export Tool** | ✅ Done | Drop in a screenshot or PDF, get back a version with all detected PII blacked out |
+| **Layer 4: Redaction Export Tool** | ✅ Done | Drop in an image, get back a version with all detected PII blacked out |
 | **Layer 2: Clipboard Guard** | ✅ Done | Warns you locally before you paste something sensitive you just copied |
 | **Web Demo (Flask)** | ✅ Done | Local Flask web UI: upload a file to get a redacted copy back, and toggle the live overlay on/off, all from your browser, all local |
 | **Layer 3: Screen-Share Mode** | 🗺️ Roadmap | Extra-aggressive blurring specifically tuned for video calls |
@@ -85,7 +85,7 @@ PrivyShield/
 ├── app/                     # User-facing features
 │   ├── __init__.py
 │   ├── overlay.py           # Layer 1: live screen overlay + system tray
-│   ├── redact.py            # Layer 4: redaction export (image/PDF)
+│   ├── redact.py            # Layer 4: redaction export (image)
 │   ├── clipboard_guard.py   # Layer 2: clipboard monitor
 │   └── web_demo.py          # Local Flask web UI: upload/redact files, toggle overlay
 ├── models/                  # Trained model files (not committed, see Setup)
@@ -140,16 +140,21 @@ python NER/train.py
 
 ## Usage
 
+**Web Demo (browser-based, local only):**
+```bash
+python -m app.web_demo
+```
+Hosts the project locally and prints a link in the terminal. Open that link in your browser to upload a screenshot or PDF and get back its redacted version, and to toggle the live overlay on or off, all without touching the command line again. Everything still runs on your machine; the Flask server only serves the local page, nothing is sent externally.
+
 **Screen Shield (live overlay):**
 ```bash
 python -m app.overlay
 ```
 Runs full-screen, blurring detected PII live. Right-click the tray icon to hide/show the overlay, pause/resume detection, or quit.
 
-**Redaction export (screenshot or PDF → redacted copy):**
+**Redaction export (screenshot → redacted copy):**
 ```bash
 python -m app.redact path/to/input.png path/to/output.png
-python -m app.redact path/to/input.pdf path/to/output.pdf
 ```
 
 **Clipboard Guard:**
@@ -157,12 +162,6 @@ python -m app.redact path/to/input.pdf path/to/output.pdf
 python -m app.clipboard_guard
 ```
 Runs in the background and gives a local notification if you copy something that looks sensitive.
-
-**Web Demo (browser-based, local only):**
-```bash
-python -m app.web_demo
-```
-Hosts the project locally and prints a link in the terminal. Open that link in your browser to upload a screenshot or PDF and get back its redacted version, and to toggle the live overlay on or off, all without touching the command line again. Everything still runs on your machine; the Flask server only serves the local page, nothing is sent externally.
 
 Or call the detection pipeline directly:
 ```python
